@@ -1,9 +1,5 @@
-% Copy this file to local_paths.m and edit the paths if dependencies are
-% not already on your MATLAB path and automatic discovery does not find them.
-%
-% Chebfun supplies jacpts. Recent Chebfun versions also supply aaa. The
-% scripts also work with a standalone aaa.m; cub_rule.m automatically falls
-% back if the optional 'sign' flag is unavailable.
+% Copy this file to local_paths.m if Chebfun is not on your MATLAB path.
+% The scripts use jacpts, legpts and aaa. The aaa has to accept the option
+% 'sign', which the aaa.m of the current Chebfun repository does.
 
-% addpath('/absolute/path/to/chebfun')
-% addpath('/absolute/path/to/standalone/aaa/folder')
+% addpath('/path/to/chebfun')

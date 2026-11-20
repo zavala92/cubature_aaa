@@ -1,7 +1,6 @@
 function cub4b_resolution()
-%CUB4B_RESOLUTION Confirm that the delta = 0.01 floor in cub4 is set by
-%   the boundary sampling density, not by the method: rerun the exterior
-%   delta = 0.01 target with M = 3200 boundary samples.
+%CUB4B_RESOLUTION   The target at distance 0.01 outside the starfish, as in
+%   cub4_potential, with M = 800, 1600 and 3200 boundary points (Table 4).
 cfg = cub_config();
 rf  = @(s) 1 + 0.3*cos(5*s);
 rfp = @(s) -1.5*sin(5*s);
@@ -19,7 +18,7 @@ for M = [800 1600 3200]
     t = 2*pi*(0:M-1)'/M;
     zs = zf(t); om = Wf(t);
     best = inf; bn = 0;
-    for deg = 20:10:150
+    for deg = 6:6:150
         [zk, wk, ~] = cub_rule(zs, om, deg, cfg.pdeg);
         if isempty(zk), continue; end
         e = abs(sum(wk.*f1(zk)) - Iref)/abs(Iref);

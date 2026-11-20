@@ -1,5 +1,6 @@
 function cub3c_resolution()
-%CUB3C_RESOLUTION Starfish area integral: floor vs boundary sampling.
+%CUB3C_RESOLUTION   Starfish, f = exp(z): best error for M = 800, 1600 and
+%   3200 boundary points, AAA degrees 10:10:150.
 cfg = cub_config();
 rf  = @(s) 1 + 0.3*cos(5*s);
 rfp = @(s) -1.5*sin(5*s);

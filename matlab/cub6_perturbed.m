@@ -1,10 +1,9 @@
 function cub6_perturbed()
-%CUB6_PERTURBED The classical rule needs the exact geometry; the AAA rule
-%   does not. Domain: an ellipse (a, b) = (1, 0.6) perturbed by
-%   p*exp(3it). Gauss--Gegenbauer on the focal segment of the underlying
-%   ellipse (the classical rule one would use) floors at O(p); the AAA
-%   cubature rule, built from the true boundary data, reaches machine
-%   precision regardless of p.
+%CUB6_PERTURBED   Perturbed ellipse (Figure 2).
+%   Boundary a*cos(t) + i*b*sin(t) + p*exp(3it), a = 1, b = 0.6, p = 1e-2
+%   and 1e-4, f = exp(z). Gauss-Gegenbauer quadrature on the focal segment
+%   of the unperturbed ellipse stalls at an error of about p. The rule
+%   computed from the perturbed boundary does not.
 cfg = cub_config();
 a = 1; b = 0.6; c = sqrt(a^2 - b^2);
 t = 2*pi*(0:cfg.M-1)'/cfg.M;
@@ -37,16 +36,18 @@ for j = 1:numel(ps)
 end
 
 FS = cfg.FS;
-figure('Color','w','Position',[100 100 1000 380]);
+figure('Color','w','Position',cfg.fig.position);
 tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 for j = 1:2
     r = res{j};
     nexttile
-    semilogy(r.gn, r.ge, 's', 'Color', cfg.col.gauss, 'MarkerSize', 5.5); hold on
-    semilogy(r.an, r.ae, 'o', 'Color', cfg.col.node, 'MarkerSize', 5.5, ...
+    semilogy(r.gn, r.ge, 's', 'Color', cfg.col.gauss, ...
+             'MarkerSize', cfg.plot.markerSize); hold on
+    semilogy(r.an, r.ae, 'o', 'Color', cfg.col.node, ...
+             'MarkerSize', cfg.plot.markerSize, ...
              'LineWidth', 1)
     yline(r.p, ':', 'Color', [.5 .5 .5], 'LineWidth', 1);
-    ylim([1e-17 10]); xlim([0 44]); grid on; box on
+    ylim(cfg.plot.errorLimits); xlim([0 44]); grid on; box on
     set(gca, 'YMinorGrid', 'off', 'FontSize', FS-1)
     xlabel('number of nodes $n$', 'FontSize', FS)
     if j == 1
@@ -56,6 +57,11 @@ for j = 1:2
         text(23, 1e-11, 'AAA cubature', 'Color', cfg.col.node, ...
              'FontSize', FS-2)
     end
+    text(40, 2e-1, sprintf('$p=10^{%d}$', round(log10(r.p))), ...
+         'HorizontalAlignment', 'right', 'FontSize', FS-2)
+end
+for ax = findall(gcf, 'Type', 'axes')'
+    ax.Toolbar.Visible = 'off';
 end
 exportgraphics(gcf, fullfile(cfg.here, 'cub6_perturbed.pdf'), ...
                'ContentType', 'vector', 'BackgroundColor', 'white');

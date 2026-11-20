@@ -1,101 +1,47 @@
 function cfg = cub_config()
-%CUB_CONFIG Shared configuration for the cubature-from-rational-
-%   approximation project (2D generalization; standalone project).
+%CUB_CONFIG   Parameters and plot defaults shared by the cub* scripts.
+%   Chebfun (jacpts, legpts, aaa) has to be on the path. If it is not, put
+%   the addpath calls in local_paths.m, see local_paths_template.m, or set
+%   the environment variable CHEBFUN_PATH.
 here = fileparts(mfilename('fullpath'));
 cfg.here = here;
-add_dependency_paths(here);
-require_dependency_functions();
+if exist(fullfile(here, 'local_paths.m'), 'file') == 2
+    run(fullfile(here, 'local_paths.m'));
+end
+if exist('aaa', 'file') ~= 2 && ~isempty(getenv('CHEBFUN_PATH'))
+    addpath(getenv('CHEBFUN_PATH'));
+end
+if exist('aaa', 'file') ~= 2 || exist('jacpts', 'file') ~= 2
+    error('cub_config:chebfun', ...
+          'Chebfun not found, see local_paths_template.m.');
+end
 cfg.deps.aaa = which('aaa');
 cfg.deps.jacpts = which('jacpts');
 
-cfg.M = 800;            % boundary samples fed to AAA
-cfg.pdeg = 10;          % polynomial columns in the least-squares fit
+cfg.M = 800;            % boundary points
+cfg.pdeg = 10;          % polynomial degree in the least-squares fit
 
-cfg.FS = 14;
+% plots
+cfg.FS = 18;
 cfg.col.node  = [0.85 0.10 0.10];
 cfg.col.curve = [0.00 0.35 0.72];
 cfg.col.gauss = [0.15 0.15 0.15];
 cfg.col.alt   = [0.00 0.35 0.72];
+cfg.col.violet = [0.45 0.20 0.55];
+cfg.fig.position = [100 100 1000 380];
+cfg.plot.curveWidth = 1.1;
+cfg.plot.markerSize = 6.5;
+cfg.plot.nodeSize = 12;
+cfg.plot.errorLimits = [1e-16 10];
+set(groot, 'defaultFigureColor', 'w');
+set(groot, 'defaultFigureRenderer', 'painters');
 set(groot, 'defaultTextInterpreter', 'latex');
 set(groot, 'defaultLegendInterpreter', 'latex');
 set(groot, 'defaultAxesTickLabelInterpreter', 'latex');
-set(groot, 'defaultAxesFontSize', 13);
+set(groot, 'defaultAxesFontSize', 16);
 set(groot, 'defaultAxesLineWidth', 0.6);
 set(groot, 'defaultAxesTickDir', 'out');
 set(groot, 'defaultAxesGridAlpha', 0.08);
-end
-
-function add_dependency_paths(here)
-% Optional local hook. Copy local_paths_template.m to local_paths.m and
-% edit it for machine-specific paths if automatic discovery is not enough.
-hook = fullfile(here, 'local_paths.m');
-if exist(hook, 'file') == 2
-    run(hook);
-end
-
-if exist('jacpts', 'file') ~= 2 || exist('aaa', 'file') ~= 2
-    add_existing_paths(chebfun_candidates(here));
-end
-
-if exist('aaa', 'file') ~= 2
-    add_existing_paths(aaa_candidates(here));
-end
-end
-
-function require_dependency_functions()
-missing = {};
-if exist('aaa', 'file') ~= 2
-    missing{end+1} = 'aaa'; %#ok<AGROW>
-end
-if exist('jacpts', 'file') ~= 2
-    missing{end+1} = 'jacpts'; %#ok<AGROW>
-end
-if ~isempty(missing)
-    error(['Missing required MATLAB functions: %s.\n' ...
-           'Install Chebfun and add it to the MATLAB path, set ' ...
-           'CHEBFUN_PATH/AAA_PATH, or create local_paths.m from ' ...
-           'local_paths_template.m.'], strjoin(missing, ', '));
-end
-end
-
-function paths = chebfun_candidates(here)
-home = user_home();
-paths = {getenv('CHEBFUN_PATH'), getenv('CHEBFUN_ROOT'), ...
-         fullfile(here, 'chebfun'), ...
-         fullfile(here, 'extern', 'chebfun'), ...
-         fullfile(here, '..', 'chebfun')};
-if ~isempty(home)
-    paths = [paths, { ...
-        fullfile(home, 'Documents', 'MATLAB', 'chebfun'), ...
-        fullfile(home, 'Documents', 'MATLAB', 'surfacefun', 'chebfun'), ...
-        fullfile(home, 'MATLAB', 'chebfun')}]; %#ok<AGROW>
-end
-end
-
-function paths = aaa_candidates(here)
-home = user_home();
-paths = {getenv('AAA_PATH'), getenv('AAA_ROOT'), ...
-         fullfile(here, 'aaa'), ...
-         fullfile(here, 'extern', 'aaa')};
-if ~isempty(home)
-    paths = [paths, { ...
-        fullfile(home, 'MATLAB', 'aaa'), ...
-        fullfile(home, 'MATLAB_local', 'MATLAB', 'aaa')}]; %#ok<AGROW>
-end
-end
-
-function add_existing_paths(paths)
-for k = 1:numel(paths)
-    p = paths{k};
-    if ~isempty(p) && exist(p, 'dir') == 7
-        addpath(p);
-    end
-end
-end
-
-function home = user_home()
-home = getenv('HOME');
-if isempty(home)
-    home = getenv('USERPROFILE');
-end
+set(groot, 'defaultAxesMinorGridAlpha', 0.04);
+set(groot, 'defaultAxesBox', 'on');
 end

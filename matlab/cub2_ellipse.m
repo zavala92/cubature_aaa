@@ -1,9 +1,12 @@
 function cub2_ellipse()
-%CUB2_ELLIPSE On an ellipse the Schwarz function has a branch cut on the
-%   focal segment [-c, c], and the exact reduction is
+%CUB2_ELLIPSE   Ellipse with semi-axes a = 1, b = 0.6 (Figure 1).
+%   The area integral reduces to the focal segment [-c, c], c^2 = a^2 - b^2:
+%
 %       I = (2ab/c^2) * int_{-c}^{c} f(x) sqrt(c^2 - x^2) dx,
-%   a Chebyshev-U (Gegenbauer) weight. The AAA nodes should land on the
-%   focal segment and perform like Gauss--Gegenbauer.
+%
+%   so Gauss-Gegenbauer quadrature on [-c, c] is the rule to compare with.
+%   Left panel: nodes of the first rule with n >= 14 and the Gauss points.
+%   Right panel: errors for f = exp(z) against the number of nodes.
 cfg = cub_config();
 a = 1; b = 0.6; c = sqrt(a^2 - b^2);
 t = 2*pi*(0:cfg.M-1)'/cfg.M;
@@ -30,6 +33,7 @@ for deg = 2:2:44
     e2(end+1) = abs(sum(wk.*f2(zk)) - I2)/abs(I2);
     if numel(zk) >= 14 && isempty(keep), keep = zk; end
 end
+% Gauss-Gegenbauer with 1 to 20 points
 gn = 1:20; g1 = zeros(size(gn)); g2 = g1;
 for k = gn
     [xg, wg] = jacpts(k, 0.5, 0.5);
@@ -41,11 +45,11 @@ fprintf('max |Im node| (should be ~0, nodes on focal segment): %.2e\n', ...
         max(abs(imag(keep))));
 
 FS = cfg.FS;
-figure('Color','w','Position',[100 100 1000 380]);
+figure('Color','w','Position',cfg.fig.position);
 tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
 nexttile
 plot(real(zs([1:end 1])), imag(zs([1:end 1])), '-', 'Color', cfg.col.curve, ...
-     'LineWidth', 1.1); hold on
+     'LineWidth', cfg.plot.curveWidth); hold on
 plot([-c c], [0 0], 'k-', 'LineWidth', 0.8)
 [xg, ~] = jacpts(numel(keep), 0.5, 0.5);
 plot(c*xg, 0*xg, 'o', 'Color', cfg.col.gauss, 'MarkerSize', 7)
@@ -54,13 +58,18 @@ plot([-c c], [0 0], 'k+', 'MarkerSize', 8, 'LineWidth', 1.1)
 axis equal; box on
 xlabel('Re $z$', 'FontSize', FS); ylabel('Im $z$', 'FontSize', FS)
 nexttile
-semilogy(an, e1, 'o', 'Color', cfg.col.node, 'MarkerSize', 5.5, 'LineWidth', 1); hold on
-semilogy(gn, g1, 's', 'Color', cfg.col.gauss, 'MarkerSize', 5.5)
-ylim([1e-16 10]); grid on; box on; set(gca,'YMinorGrid','off')
+semilogy(an, e1, 'o', 'Color', cfg.col.node, ...
+         'MarkerSize', cfg.plot.markerSize, 'LineWidth', 1); hold on
+semilogy(gn, g1, 's', 'Color', cfg.col.gauss, ...
+         'MarkerSize', cfg.plot.markerSize)
+ylim(cfg.plot.errorLimits); grid on; box on; set(gca,'YMinorGrid','off')
 xlabel('number of nodes $n$', 'FontSize', FS)
 ylabel('relative error', 'FontSize', FS)
-text(11, 1e-4, 'AAA cubature', 'Color', cfg.col.node, 'FontSize', FS-2)
-text(3.4, 1e-10, 'Gauss--Gegenbauer', 'Color', cfg.col.gauss, 'FontSize', FS-2)
+legend({'AAA cubature', 'Gauss--Gegenbauer'}, 'FontSize', FS-3, ...
+       'Box', 'off', 'Location', 'northeast')
+for ax = findall(gcf, 'Type', 'axes')'
+    ax.Toolbar.Visible = 'off';
+end
 exportgraphics(gcf, fullfile(cfg.here, 'cub2_ellipse.pdf'), ...
                'ContentType', 'vector', 'BackgroundColor', 'white');
 end

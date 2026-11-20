@@ -1,33 +1,20 @@
 function run_reproduce()
-%RUN_REPRODUCE Run all numerical experiments and refresh paper figures.
-%
-%   From the matlab/ directory, run
-%       run_reproduce
-%
-%   This calls run_freeze, which executes every experiment used in the
-%   paper, then copies the regenerated figure PDFs into ../paper/figures.
+%RUN_REPRODUCE   All computations of the paper.
+%   Calls run_freeze, then cub11_revision and both modes of cub12_checks,
+%   and copies the seven figure PDFs to ../figures.
 here = fileparts(mfilename('fullpath'));
-old = pwd;
-cleanup = onCleanup(@() cd(old));
-cd(here);
-
 run_freeze();
+cub11_revision();
+cub12_checks('basis');
+cub12_checks('ellipse');
+close all
 
-figs = {'cub2_ellipse.pdf', 'cub3_domains.pdf', 'cub3b_qd.pdf', ...
-        'cub4_potential.pdf', 'cub6_perturbed.pdf'};
-figdir = fullfile(here, '..', 'paper', 'figures');
-if exist(figdir, 'dir') ~= 7
-    mkdir(figdir);
-end
+% Figures 1 to 7
+figs = {'cub2_ellipse', 'cub6_perturbed', 'cub3_domains', 'cub3b_qd', ...
+        'cub9_neumann', 'cub8_square', 'cub4_potential'};
+figdir = fullfile(here, '..', 'figures');
+if ~exist(figdir, 'dir'), mkdir(figdir); end
 for k = 1:numel(figs)
-    src = fullfile(here, figs{k});
-    dst = fullfile(figdir, figs{k});
-    if exist(src, 'file') == 2
-        copyfile(src, dst);
-    else
-        warning('run_reproduce:missingFigure', ...
-                'Expected figure was not generated: %s', figs{k});
-    end
+    copyfile(fullfile(here, [figs{k} '.pdf']), figdir);
 end
-fprintf('Reproduction run complete. Figures synced to %s\n', figdir);
 end

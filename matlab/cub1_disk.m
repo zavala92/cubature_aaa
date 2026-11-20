@@ -1,7 +1,9 @@
 function cub1_disk()
-%CUB1_DISK Sanity demo: on a disk the boundary data zbar = R^2/z + c-terms
-%   is rational, so the schema should return a SINGLE node at the center
-%   with weight pi*R^2 -- the mean value property, discovered numerically.
+%CUB1_DISK   Disk: the rule reduces to the mean value property.
+%   On |z - z0| = R we have zbar = conj(z0) + R^2/(z - z0), so the boundary
+%   data have one pole, at the centre, with residue R^2. The script checks
+%   that the node of largest weight is z0 with weight pi*R^2, for the unit
+%   disk and for the disk of radius 0.7 about 0.5 + 0.2i.
 cfg = cub_config();
 t = 2*pi*(0:cfg.M-1)'/cfg.M;
 

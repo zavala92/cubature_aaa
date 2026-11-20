@@ -1,58 +1,46 @@
 function [zk, wk, epsf, zout] = cub_rule(zs, om, deg, pdeg, zsv, omv)
-%CUB_RULE Cubature rule from rational approximation of boundary data.
+%CUB_RULE   Cubature rule from boundary data.
+%   [zk, wk, epsf, zout] = cub_rule(zs, om, deg, pdeg)
 %
-%   The area integral of an analytic density f against a weight w over a
-%   domain Omega equals (1/2i) times the contour integral of f * W over
-%   gamma = boundary(Omega), where dW/dzbar = w (Cauchy-Pompeiu). Given
-%   samples zs of gamma and om = W restricted to gamma, this routine
-%   approximates om on gamma by
-%       rho(z) = sum_k c_k/(z - z_k)  +  polynomial,
-%   using AAA for the pole locations and a least-squares fit for the
-%   coefficients. Poles inside Omega become cubature nodes with weights
-%   pi*c_k; poles outside Omega and the polynomial integrate to zero
-%   against analytic f and serve only to improve the fit. The sup norm
-%   of the fit residual on gamma certifies the cubature error:
-%       |I - I_n| <= (|gamma|/2) * epsf * max_gamma |f|.
+%   zs    points on the boundary curve, in order (column)
+%   om    boundary data W at zs, where dW/dzbar = w; conj(zs) if w = 1
+%   deg   AAA degree
+%   pdeg  degree of the polynomial part of the fit
 %
-%   [zk, wk, epsf, zout] = cub_rule(zs, om, deg, pdeg, zsv, omv)
-%     zs   boundary samples (complex column, ordered along gamma)
-%     om   values of W on the samples
-%     deg  AAA degree
-%     pdeg polynomial degree in the least-squares basis
-%     zsv, omv  optional VALIDATION grid (finer, offset from zs); if
-%          given, epsf is the residual on the validation grid rather
-%          than on the fitting samples
-%     zk   nodes (poles inside Omega),  wk  weights (= pi * c_k)
-%     epsf sup-norm residual (validation grid if provided, else fit grid)
-%     zout poles outside Omega (basis helpers, no weight)
+%   zk    nodes, the AAA poles inside the curve
+%   wk    weights, pi times the fitted residues
+%   epsf  max |rho - om| on zs, or on zsv for cub_rule(..., zsv, omv)
+%   zout  poles outside the curve, kept in the fit but without weight
+%
+%   sum(wk.*f(zk)) approximates the integral of f*w over the domain, with
+%   error at most (length/2) * max|rho - W| * max|f| on the curve.
 if nargin < 5, zsv = []; omv = []; end
-ws = warning('off', 'all');
-try
-    [~, pol] = aaa(om, zs, 'degree', deg, 'sign', 1, 'lawson', 0, ...
-                   'tol', 0, 'cleanup', 0);
-catch
-    [~, pol] = aaa(om, zs, 'degree', deg, 'lawson', 0, ...
-                   'tol', 0, 'cleanup', 0);
-end
-warning(ws);
+
+% poles from AAA, no Lawson steps, no cleanup
+w0 = warning('off', 'all');
+[~, pol] = aaa(om, zs, 'degree', deg, 'sign', 1, 'lawson', 0, ...
+               'tol', 0, 'cleanup', 0);
+warning(w0);
+
+% drop poles at infinity or within 1e-8 diameters of a sample point
 pol = pol(isfinite(pol));
+diam = max(abs(zs - zs.'), [], 'all');
 dmin = min(abs(zs - pol.'), [], 1);
-pol = pol(dmin(:) > 1e-8);
+pol = pol(dmin(:) > 1e-8*diam);
 
 in = inpolygon(real(pol), imag(pol), real(zs), imag(zs));
 zk = pol(in);
 zout = pol(~in);
 
+% least squares on [1/(z-zk), 1/(z-zout), (z/sc)^j]
 sc = max(abs(zs));
 A = [1./(zs - zk.'), 1./(zs - zout.'), (zs/sc).^(0:pdeg)];
-nrm = sqrt(sum(abs(A).^2, 1));
-csc = (A./nrm) \ om;
-c = csc ./ nrm.';
+c = cub_lsq_svd(A, om);
 if isempty(zsv)
     epsf = max(abs(A*c - om));
 else
     Av = [1./(zsv - zk.'), 1./(zsv - zout.'), (zsv/sc).^(0:pdeg)];
     epsf = max(abs(Av*c - omv));
 end
-wk = pi * c(1:numel(zk));
+wk = pi*c(1:numel(zk));
 end

@@ -1,11 +1,8 @@
 function cub7_details()
-%CUB7_DETAILS Algorithmic-detail measurements for the paper.
-%   (a) Fit residual vs validation residual: the residual of the
-%       least-squares fit is evaluated both on the M fitting samples and
-%       on an offset validation grid of 4M points; the ratio measures how
-%       much the discrete fit residual underestimates the continuous one.
-%   (b) Sensitivity to the polynomial degree L in the fit basis.
-%   Domain: the starfish of the paper; area integral (w = 1), f = e^z.
+%CUB7_DETAILS   Two checks on the starfish, f = exp(z).
+%   (a) Residual on the M fitting points against the residual on 4M offset
+%       points, for AAA degrees 30:30:150.
+%   (b) Best error over the same degrees for polynomial degree L = 4, 10, 16.
 cfg = cub_config();
 rf  = @(s) 1 + 0.3*cos(5*s);
 rfp = @(s) -1.5*sin(5*s);
@@ -34,7 +31,7 @@ for deg = 30:30:150
 end
 fprintf('  worst validation/fit ratio: %.2f\n', worst);
 
-fprintf('(b) sensitivity to polynomial degree L (deg = 150)\n');
+fprintf('(b) sensitivity to polynomial degree L (AAA degrees 30:30:150)\n');
 for L = [4 10 16]
     best = inf;
     for deg = 30:30:150

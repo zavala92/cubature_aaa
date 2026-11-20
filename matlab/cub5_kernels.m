@@ -1,11 +1,10 @@
 function cub5_kernels()
-%CUB5_KERNELS Kernel library demo: the same pipeline with a second
-%   kernel, the area Cauchy integral
-%       I(z0) = int int_Omega f(z) / (z - z0) dA .
-%   The dbar-antiderivative W = (zbar - conj(z0))/(z - z0) is BOUNDED at
-%   z = z0, so the Pompeiu identity holds without correction for targets
-%   inside or outside Omega. Only the two lines defining W change
-%   relative to the log kernel of cub4.
+%CUB5_KERNELS   Cauchy kernel in place of the logarithm.
+%
+%       I(z0) = int int_Omega f(z)/(z - z0) dA,    f = exp(z).
+%
+%   Boundary data W = (zbar - conj(z0))/(z - z0), which is bounded at z0.
+%   Starfish with M = 1600 points, one target inside and one outside.
 cfg = cub_config();
 rf  = @(s) 1 + 0.3*cos(5*s);
 rfp = @(s) -1.5*sin(5*s);
